@@ -1,0 +1,6 @@
+# Use alembic init to create alembic/ then configure alembic.ini DATABASE URL or env var
+# Minimal steps:
+# alembic init alembic
+# edit alembic/env.py to import your models (from app import models)
+# alembic revision --autogenerate -m "create vehicles table"
+# alembic upgrade head
