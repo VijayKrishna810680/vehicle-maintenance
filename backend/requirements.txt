@@ -8,4 +8,5 @@ pytest
 httpx
 python-dotenv
 langchain
+langchain-openai
 openai

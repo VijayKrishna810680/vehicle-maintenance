@@ -1,5 +1,5 @@
 # Simple LangChain agent skeleton. Configure your provider (OpenAI or other) via env vars.
-from langchain.llms import OpenAI
+from langchain_openai import OpenAI
 from langchain.agents import Tool, initialize_agent
 
 def calc_tool_fn(inp: str) -> str:
