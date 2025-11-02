@@ -3,6 +3,14 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def home():
+    return {"message": "Welcome to Vehicle Maintenance API!", "status": "running ✅"}
+
 from . import models, schemas, crud
 from .database import engine, SessionLocal, Base
 from .agent import agent
