@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from . import models, schemas, crud
 from .database import engine, SessionLocal, Base
-from .agent import agent
+from .agent import run  # ✅ FIXED — import the 'run' function, not 'agent'
 
 # ✅ Create tables
 Base.metadata.create_all(bind=engine)
@@ -78,5 +78,5 @@ class ChatRequest(BaseModel):
 
 @app.post("/chat")
 def chat_endpoint(req: ChatRequest):
-    resp = agent.run(req.message)
+    resp = run(req.message)  # ✅ FIXED — call the 'run' function directly
     return {"response": resp}
