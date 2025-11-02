@@ -3,40 +3,42 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-def home():
-    return {"message": "Welcome to Vehicle Maintenance API!", "status": "running ✅"}
-
 from . import models, schemas, crud
 from .database import engine, SessionLocal, Base
 from .agent import agent
 
+# ✅ Create tables
 Base.metadata.create_all(bind=engine)
 
+# ✅ Initialize FastAPI
 app = FastAPI(title="Vehicle Maintenance Records API")
 
-# ✅ Allow both local (localhost) and Docker/frontend container origins
+# ✅ Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",      # local React dev
-        "http://127.0.0.1:3000",      # alternate local URL
-        "*"                           # allow all (for Docker or future deployment)
+        "https://vehicle-maintenance-frontend.onrender.com",  # frontend Render URL
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "*"
     ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# ✅ Database Dependency
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+# ✅ Routes
+@app.get("/")
+def home():
+    return {"message": "Welcome to Vehicle Maintenance API!", "status": "running ✅"}
 
 @app.post("/vehicles/", response_model=schemas.VehicleOut)
 def create_vehicle(vehicle: schemas.VehicleCreate, db: Session = Depends(get_db)):
@@ -56,20 +58,20 @@ def read_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
     return v
 
 @app.put("/vehicles/{vehicle_id}", response_model=schemas.VehicleOut)
-def update_vehicle_endpoint(vehicle_id: int, vehicle_update: schemas.VehicleUpdate, db: Session = Depends(get_db)):
+def update_vehicle(vehicle_id: int, vehicle_update: schemas.VehicleUpdate, db: Session = Depends(get_db)):
     updated = crud.update_vehicle(db, vehicle_id, vehicle_update.dict(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail="Vehicle not found")
     return updated
 
 @app.delete("/vehicles/{vehicle_id}")
-def delete_vehicle_endpoint(vehicle_id: int, db: Session = Depends(get_db)):
+def delete_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
     deleted = crud.delete_vehicle(db, vehicle_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Vehicle not found")
     return {"ok": True}
 
-# ---------- Chat endpoint ----------
+# ✅ AI Chat Endpoint
 class ChatRequest(BaseModel):
     message: str
     use_memory: bool = True
