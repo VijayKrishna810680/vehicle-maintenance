@@ -1,17 +1,24 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
 from . import models, schemas, crud
 from .database import engine, SessionLocal, Base
 from .agent import agent
-from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Vehicle Maintenance Records API")
 
+# ✅ Allow both local (localhost) and Docker/frontend container origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",      # local React dev
+        "http://127.0.0.1:3000",      # alternate local URL
+        "*"                           # allow all (for Docker or future deployment)
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -54,7 +61,7 @@ def delete_vehicle_endpoint(vehicle_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Vehicle not found")
     return {"ok": True}
 
-from pydantic import BaseModel
+# ---------- Chat endpoint ----------
 class ChatRequest(BaseModel):
     message: str
     use_memory: bool = True
